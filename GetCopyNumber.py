@@ -7,7 +7,8 @@ import subprocess
 import tarfile
 
 
-def GetCopyNumber(FirehosePath, GisticQ, Disease, Output):
+def GetCopyNumber(FirehosePath, Disease, Output, GisticQ=0.25,
+                  FilterGenes=None):
     """Generates variables containing gene-level and arm-level copy number
     levels for events with significance 'GisticQ' or greater. Uses Firebrowse,
     a tool from the Broad Genome Data Analysis Center to download GISTIC
@@ -18,16 +19,20 @@ def GetCopyNumber(FirehosePath, GisticQ, Disease, Output):
     ----------
     FirehosePath : string
         Path to firehose_get executable.
-    GisticQ : double
-        A scalar in the range [0, 1] specifying the GISTIC significance
-        threshold to use when filtering copy-number events.
     Disease : string
         Dataset code to generate copy number profiles for. Can be obtained
         using firehose_get -c.
     Output : string
         Path to be used for temporary downloading and unzipping GISTIC files.
         Downloads and extracted files will be removed from disk on cleanup.
-
+    GisticQ : double
+        A scalar in the range [0, 1] specifying the GISTIC significance
+        threshold to use when filtering copy-number events.
+    FilterGenes:
+        A list of HUGO gene symbols used to further filter significant events.
+        Genes that are GISTIC significant but not present on this list will be
+        discarded. Can be used with Sanger Cancer Gene Census.
+        Default value = None.
     Returns
     -------
     CNVArm : named_tuple
@@ -199,6 +204,14 @@ def GetCopyNumber(FirehosePath, GisticQ, Disease, Output):
     Symbols, Indices = HUGOFilter(list(Symbols))
     CNV = CNV[Indices, :]
     GeneType = [GeneType[Index] for Index in Indices]
+
+    # filter genes using user provided list
+    if FilterGenes is not None:
+        Indices = [Symbols.index(Gene) for Gene in Symbols
+                   if Gene in FilterGenes]
+        Symbols = [Symbols[Index] for Index in Indices]
+        CNV = CNV[Indices, :]
+        GeneType = [GeneType[Index] for Index in Indices]
 
     # cleanup files
     os.remove(Output + "broad_significance_results.txt")
