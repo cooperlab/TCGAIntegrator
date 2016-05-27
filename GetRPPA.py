@@ -76,10 +76,12 @@ def GetRPPA(FirehosePath, Disease, Output):
                 ".rppa.txt" in member.name]
     RPPAFile[0].name = os.path.basename(RPPAFile[0].name)
     Tar.extract(RPPAFile[0], path=Output)
+    Tar.close()
 
     # extract gene symbols, antibodies and RPPA expression values
     TextFile = open(Output + RPPAFile[0].name, 'r')
     Contents = np.array([line[:-1].split('\t') for line in TextFile])
+    TextFile.close()
     Barcodes = list(Contents[0, 1:])
     Symbols = list(Contents[1:, 0])
     Values = Contents[1:, 1:]
