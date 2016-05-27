@@ -101,6 +101,7 @@ def GetMutations(FirehosePath, Disease, Output, MutsigQ=0.1):
     Contents = np.array([line[:-1].split(' ') for line in TextFile])
     Barcodes = list(Contents[:, 1])
     Barcodes = [Barcode.split('.')[0] for Barcode in Barcodes]
+    TextFile.close()
 
     # initialize matrix for mutations
     Binary = np.zeros((len(Symbols), len(Barcodes)), dtype=np.float)
@@ -109,16 +110,19 @@ def GetMutations(FirehosePath, Disease, Output, MutsigQ=0.1):
         TextFile = open(Output + File, 'r')
         Contents = [line[:-1].split('\t') for line in TextFile]
 
-    # delete silent mutations
-    Variant = Contents[0].index('Variant_Classification')
-    Contents = np.array(Contents[1:])
-    Silent = (Contents[:, Variant] == 'Silent').nonzero()
-    Contents = np.delete(Contents, Silent, axis=0)
+        # delete silent mutations
+        Variant = Contents[0].index('Variant_Classification')
+        Contents = np.array(Contents[1:])
+        Silent = (Contents[:, Variant] == 'Silent').nonzero()
+        Contents = np.delete(Contents, Silent, axis=0)
 
-    # MAP non-silent maf symbols to 'Symbols' and fill in Mutations
-    for i in range(Contents.shape[0]):
-        if Contents[i, 0] in Symbols:
-            Binary[Symbols.index(Contents[i, 0]), Index] = 1
+        # MAP non-silent maf symbols to 'Symbols' and fill in Mutations
+        for i in range(Contents.shape[0]):
+            if Contents[i, 0] in Symbols:
+                Binary[Symbols.index(Contents[i, 0]), Index] = 1
+
+        # close .maf file
+        TextFile.close()
 
     # cleanup files
     os.remove(Output + "MANIFEST.txt")
