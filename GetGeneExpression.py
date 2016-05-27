@@ -78,10 +78,12 @@ def GetGeneExpression(FirehosePath, Disease, Output):
               "Level_3__RSEM_genes_normalized__data.data.txt") != -1]
     GEFile[0].name = os.path.basename(GEFile[0].name)
     Tar.extract(GEFile[0], path=Output)
+    Tar.close()
 
     # extract gene symbols, antibodies and gene expression values
     TextFile = open(Output + GEFile[0].name, 'r')
     Contents = np.array([line[:-1].split('\t') for line in TextFile])
+    TextFile.close()
     Barcodes = list(Contents[0, 1:])
     Symbols = list(Contents[2:, 0])
     Values = Contents[2:, 1:]
