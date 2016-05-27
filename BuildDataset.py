@@ -4,15 +4,15 @@ from GetGeneExpression import GetGeneExpression
 from GetMutations import GetMutations
 from GetRPPA import GetRPPA
 import os
-import pickle
+import numpy as np
 import subprocess
 import sys
 import timeit
 import zipfile
 
 
-def BuildDataset(Output, FirehosePath=None, Disease=None, 
-                 MutsigQ=0.1, GisticQ=0.25):
+def BuildDataset(FirehosePath=None, Disease=None, Output,
+                 CancerCensusFile=None, MutsigQ=0.1, GisticQ=0.25):
     """Generates TCGA data in python formats for mRNA expression, protein
     expression, copy number, mutation and clinical platforms. All data is
     automatically downloaded and curated from the Broad Institute GDAC using
@@ -31,6 +31,11 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         Dataset code to generate protein expression profiles for. Can be
         obtained using firehose_get -c. If not provided, all datasets will be
         built. Default value = None.
+    CancerCensusFile : string
+        Path and filename for the Sanger Cancer Gene Census .csv file, obtained
+        from http://cancer.sanger.ac.uk/census/. Used for filtering copy
+        number events identified as significant by GISTIC.
+        Default value = None.
     MutsigQ : double
         A scalar in the range [0, 1] specifying the Mutsig2CV significance
         threshold to use when filtering somatic mutation events.
@@ -62,8 +67,6 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
             os.mkdir(Output)
 
         # wget firehose_get binary to Output folder, unzip and delete .zip
-        Location = "http://gdac.broadinstitute.org/runs/code/firehose_get_"
-        "latest.zip"
         FH = subprocess.Popen("wget http://gdac.broadinstitute.org/runs/code/"
                               "firehose_get_latest.zip -P " + Output,
                               stdout=subprocess.PIPE, shell=True)
@@ -83,8 +86,6 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         Chars = fbget.cohorts()
         Cohorts = [row.split("\t") for row in Chars.split("\n")]
         Diseases = [str(Cohorts[i][0]) for i in range(1, len(Cohorts)-1)]
-        DiseaseDescription = [str(Cohorts[i][1]) for i in
-                              range(1, len(Cohorts)-1)]
 
         # generate prefix necessary for creating subdirectories
         Prefixes = [Cohort + "/" for Cohort in Diseases]
@@ -97,6 +98,13 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         # output will be put directly into 'Output'
         Prefixes = ['']
 
+    # extract Sanger Census genes if path is provided
+    if CancerCensusFile is not None:
+        File = open(CancerCensusFile, 'r')
+        CancerGenes = [line[:-1].split(',')[0] for line in File]
+    else:
+        CancerGenes = None
+
     # iterate over each disease type, generating output and updating console
     for Index, Cohort in enumerate(Diseases):
 
@@ -108,7 +116,7 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         # generate mutation
         sys.stdout.write("\tMutations - generating data...")
         Start = timeit.timeit()
-        Mutations = GetMutations(FirehosePath, MutsigQ, Cohort,
+        Mutations = GetMutations(FirehosePath, Cohort,
                                  Output + Prefixes[Index])
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
@@ -116,8 +124,9 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         # generate copy number
         sys.stdout.write("\tCopy Number - generating data...")
         Start = timeit.timeit()
-        (CNVArm, CNVGene) = GetCopyNumber(FirehosePath, GisticQ, Cohort,
-                                          Output + Prefixes[Index])
+        (CNVArm, CNVGene) = GetCopyNumber(FirehosePath, Cohort, Output +
+                                          Prefixes[Index], GisticQ,
+                                          CancerGenes)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
 
