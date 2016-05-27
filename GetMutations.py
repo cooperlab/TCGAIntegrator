@@ -95,7 +95,8 @@ def GetMutations(FirehosePath, Disease, Output, MutsigQ=0.1):
         member.name = os.path.basename(member.name)
         Tar.extract(member, path=Output)
         MAFFilenames.append(member.name)
-
+    Tar.close()
+    
     # read in manifest and get barcodes that were sequenced
     TextFile = open(Output + "MANIFEST.txt", 'r')
     Contents = np.array([line[:-1].split(' ') for line in TextFile])
