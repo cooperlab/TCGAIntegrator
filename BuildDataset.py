@@ -12,7 +12,7 @@ import timeit
 import zipfile
 
 
-def BuildDataset(FirehosePath=None, Disease=None, Output,
+def BuildDataset(Output, FirehosePath=None, Disease=None,
                  CancerCensusFile=None, MutsigQ=0.1, GisticQ=0.25):
     """Generates TCGA data in python formats for mRNA expression, protein
     expression, copy number, mutation and clinical platforms. All data is
@@ -22,6 +22,10 @@ def BuildDataset(FirehosePath=None, Disease=None, Output,
 
     Parameters
     ----------
+    Output : string
+        Path to be used for generating outputs. Temporary downloading and
+        unzipping of files will also happen here. Downloads and extracted files
+        will be removed from disk on cleanup.
     FirehosePath : string
         Path to firehose_get executable. If not provided the executable will
         be downloaded to the folder 'Output' using the command:
@@ -43,10 +47,6 @@ def BuildDataset(FirehosePath=None, Disease=None, Output,
     GisticQ : double
         A scalar in the range [0, 1] specifying the GISTIC significance
         threshold to use when filtering copy-number events.
-    Output : string
-        Path to be used for generating outputs. Temporary downloading and
-        unzipping of files will also happen here. Downloads and extracted files
-        will be removed from disk on cleanup.
 
     Returns
     -------
