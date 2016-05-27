@@ -176,24 +176,24 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
 
         # reshape arrays from each datatype to match order, size of 'Samples'
         Indices = [Samples.index(Sample) for Sample in MutationSamples]
-        MutationsMapped = np.NaN * np.ones((len(MutationFeatures),
+        MutationsMapped = np.NaN * np.ones((len(MutationSymbols),
                                             len(Samples)))
         MutationsMapped[:, Indices] = Mutations.Binary
 
         Indices = [Samples.index(Sample) for Sample in CNVGeneSamples]
-        CNVGeneMapped = np.NaN * np.ones((len(CNVGeneFeatures), len(Samples)))
+        CNVGeneMapped = np.NaN * np.ones((len(CNVGeneSymbols), len(Samples)))
         CNVGeneMapped[:, Indices] = CNVGene.CNV
 
         Indices = [Samples.index(Sample) for Sample in CNVArmSamples]
-        CNVArmMapped = np.NaN * np.ones((len(CNVArmFeatures), len(Samples)))
+        CNVArmMapped = np.NaN * np.ones((len(CNVArmSymbols), len(Samples)))
         CNVArmMapped[:, Indices] = CNVArm.CNV
 
         Indices = [Samples.index(Sample) for Sample in ProteinSamples]
-        ProteinMapped = np.NaN * np.ones((len(ProteinFeatures), len(Samples)))
+        ProteinMapped = np.NaN * np.ones((len(ProteinSymbols), len(Samples)))
         ProteinMapped[:, Indices] = Protein.Expression
 
         Indices = [Samples.index(Sample) for Sample in mRNASamples]
-        mRNAMapped = np.NaN * np.ones((len(mRNAFeatures), len(Samples)))
+        mRNAMapped = np.NaN * np.ones((len(mRNASymbols), len(Samples)))
         mRNAMapped[:, Indices] = mRNA.Expression
 
         # stack into master table
