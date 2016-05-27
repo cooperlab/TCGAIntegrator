@@ -1,4 +1,8 @@
 from firebrowse import fbget
+from GetCopyNumber import GetCopyNumber
+from GetGeneExpression import GetGeneExpression
+from GetMutations import GetMutations
+from GetRPPA import GetRPPA
 import os
 import pickle
 import subprocess
