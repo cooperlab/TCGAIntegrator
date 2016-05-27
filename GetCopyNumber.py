@@ -115,6 +115,7 @@ def GetCopyNumber(FirehosePath, Disease, Output, GisticQ=0.25,
     Tar.extract(AmpConfFile, path=Output)
     Tar.extract(DelConfFile, path=Output)
     Tar.extract(ThreshFile, path=Output)
+    Tar.close()
 
     # read in arm-level significance results
     TextFile = open(Output + "broad_significance_results.txt", 'r')
@@ -123,6 +124,7 @@ def GetCopyNumber(FirehosePath, Disease, Output, GisticQ=0.25,
     AmpIndex = Contents[0].index("Amp q-value")
     DelIndex = Contents[0].index("Del q-value")
     Contents = np.array(Contents[1:])
+    TextFile.close()
     Arms = Contents[:, ArmIndex]
     AmpQs = Contents[:, AmpIndex].astype(np.float)
     DelQs = Contents[:, DelIndex].astype(np.float)
@@ -143,6 +145,7 @@ def GetCopyNumber(FirehosePath, Disease, Output, GisticQ=0.25,
     # read in arm-level values and filter out insignificant events
     TextFile = open(Output + "broad_values_by_arm.txt", 'r')
     Contents = np.array([line[:-1].split('\t') for line in TextFile])
+    TextFile.close()
     ArmSymbols = Contents[1:, 0]
     ArmBarcodes = Contents[0, 1:]
     ArmCNV = Contents[1:, 1:].astype(np.float)
@@ -154,6 +157,7 @@ def GetCopyNumber(FirehosePath, Disease, Output, GisticQ=0.25,
     # read in amplification conf file to generate amplification genes
     TextFile = open(Output + "table_amp.conf_99.txt", 'r')
     Contents = [line[:-1].split('\t') for line in TextFile]
+    TextFile.close()
     GeneIndex = Contents[0].index("genes_in_region")
     Contents = np.array(Contents[1:])
     GeneLists = Contents[1:, GeneIndex]
@@ -163,6 +167,7 @@ def GetCopyNumber(FirehosePath, Disease, Output, GisticQ=0.25,
     # read in deletion conf file to generate amplification genes
     TextFile = open(Output + "table_del.conf_99.txt", 'r')
     Contents = [line[:-1].split('\t') for line in TextFile]
+    TextFile.close()
     GeneIndex = Contents[0].index("genes_in_region")
     Contents = np.array(Contents[1:])
     GeneLists = Contents[1:, GeneIndex]
@@ -193,6 +198,7 @@ def GetCopyNumber(FirehosePath, Disease, Output, GisticQ=0.25,
     # read in thresholded copy number values and process
     TextFile = open(Output + "all_thresholded.by_genes.txt", 'r')
     Contents = np.array([line[:-1].split('\t') for line in TextFile])
+    TextFile.close()
     Symbols = Contents[1:, 0]
     Barcodes = Contents[0, 3:]
     CNV = Contents[1:, 3:].astype(np.float)
