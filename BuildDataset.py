@@ -3,8 +3,9 @@ from GetCopyNumber import GetCopyNumber
 from GetGeneExpression import GetGeneExpression
 from GetMutations import GetMutations
 from GetRPPA import GetRPPA
-import os
 import numpy as np
+import os
+import pickle
 import subprocess
 import sys
 import timeit
@@ -145,7 +146,67 @@ def BuildDataset(FirehosePath=None, Disease=None, Output,
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
 
-        # merge outputs and write outputs to disk
-        
+        # build feature names list
+        MutationSymbols = [Symbol + "_Mut" for Symbol in Mutations.Symbols]
+        CNVGeneSymbols = [Symbol + "_CNV" for Symbol in CNVGene.Symbols]
+        CNVArmSymbols = [Symbol + "_CNVArm" for Symbol in CNVArm.Symbols]
+        ProteinSymbols = [Symbol + "_Protein" for Symbol in Protein.Symbols]
+        mRNASymbols = [Symbol + "_mRNA" for Symbol in mRNA.Symbols]
+        Symbols = MutationSymbols + CNVGeneSymbols + CNVArmSymbols +\
+            ProteinSymbols + mRNASymbols
+
+        # build feature types list
+        MutationTypes = ["Mutation" for Symbol in Mutations.Symbols]
+        CNVGeneTypes = ["CNV-Gene" for Symbol in CNVGene.Symbols]
+        CNVArmTypes = ["CNV-Arm" for Symbol in CNVArm.Symbols]
+        ProteinTypes = ["Protein" for Symbol in Protein.Symbols]
+        mRNATypes = ["mRNA" for Symbol in mRNA.Symbols]
+        SymbolTypes = MutationTypes + CNVGeneTypes + CNVArmTypes +\
+            ProteinTypes + mRNATypes
+
+        # build comprehensive sample list, tissue types
+        MutationSamples = [Barcode[0:15] for Barcode in Mutations.Barcodes]
+        CNVGeneSamples = [Barcode[0:15] for Barcode in CNVGene.Barcodes]
+        CNVArmSamples = [Barcode[0:15] for Barcode in CNVArm.Barcodes]
+        ProteinSamples = [Barcode[0:15] for Barcode in Protein.Barcodes]
+        mRNASamples = [Barcode[0:15] for Barcode in mRNA.Barcodes]
+        Samples = list(set(MutationSamples + CNVGeneSamples + CNVArmSamples +
+                           ProteinSamples + mRNASamples))
+        TissueType = [int(Sample[13:15]) for Sample in Samples]
+
+        # reshape arrays from each datatype to match order, size of 'Samples'
+        Indices = [Samples.index(Sample) for Sample in MutationSamples]
+        MutationsMapped = np.NaN * np.ones((len(MutationFeatures),
+                                            len(Samples)))
+        MutationsMapped[:, Indices] = Mutations.Binary
+
+        Indices = [Samples.index(Sample) for Sample in CNVGeneSamples]
+        CNVGeneMapped = np.NaN * np.ones((len(CNVGeneFeatures), len(Samples)))
+        CNVGeneMapped[:, Indices] = CNVGene.CNV
+
+        Indices = [Samples.index(Sample) for Sample in CNVArmSamples]
+        CNVArmMapped = np.NaN * np.ones((len(CNVArmFeatures), len(Samples)))
+        CNVArmMapped[:, Indices] = CNVArm.CNV
+
+        Indices = [Samples.index(Sample) for Sample in ProteinSamples]
+        ProteinMapped = np.NaN * np.ones((len(ProteinFeatures), len(Samples)))
+        ProteinMapped[:, Indices] = Protein.Expression
+
+        Indices = [Samples.index(Sample) for Sample in mRNASamples]
+        mRNAMapped = np.NaN * np.ones((len(mRNAFeatures), len(Samples)))
+        mRNAMapped[:, Indices] = mRNA.Expression
+
+        # stack into master table
+        Features = np.vstack((MutationsMapped, CNVGeneMapped, CNVArmMapped,
+                              ProteinMapped, mRNAMapped))
+
+        # write outputs to disk
+        File = open(Output + Prefixes[Index] + Cohort + ".Data.p", 'w')
+        pickle.dump(Symbols, File)
+        pickle.dump(SymbolTypes, File)
+        pickle.dump(Samples, File)
+        pickle.dump(TissueType, File)
+        pickle.dump(Features, File)
+        File.close()
 
     return
