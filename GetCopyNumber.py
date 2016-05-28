@@ -7,7 +7,7 @@ import subprocess
 import tarfile
 
 
-def GetCopyNumber(FirehosePath, Disease, Output, GisticQ=0.25,
+def GetCopyNumber(Output, FirehosePath, Disease, GisticQ=0.25,
                   FilterGenes=None):
     """Generates variables containing gene-level and arm-level copy number
     levels for events with significance 'GisticQ' or greater. Uses Firebrowse,
@@ -17,14 +17,14 @@ def GetCopyNumber(FirehosePath, Disease, Output, GisticQ=0.25,
 
     Parameters
     ----------
+    Output : string
+        Path to be used for temporary downloading and unzipping GISTIC files.
+        Downloads and extracted files will be removed from disk on cleanup.
     FirehosePath : string
         Path to firehose_get executable.
     Disease : string
         Dataset code to generate copy number profiles for. Can be obtained
         using firehose_get -c.
-    Output : string
-        Path to be used for temporary downloading and unzipping GISTIC files.
-        Downloads and extracted files will be removed from disk on cleanup.
     GisticQ : double
         A scalar in the range [0, 1] specifying the GISTIC significance
         threshold to use when filtering copy-number events.
