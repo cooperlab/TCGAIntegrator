@@ -7,7 +7,7 @@ import subprocess
 import tarfile
 
 
-def GetGeneExpression(FirehosePath, Disease, Output):
+def GetGeneExpression(Output, FirehosePath, Disease):
     """Generates variables containing gene expression values from the
     platform. Uses Firebrowse, a tool from the Broad Genome Data
     Analysis Center to download gene expression array values from the Broad
@@ -15,15 +15,15 @@ def GetGeneExpression(FirehosePath, Disease, Output):
 
     Parameters
     ----------
+    Output : string
+        Path to be used for temporary downloading and unzipping mRNA
+        files. Downloads and extracted files will be removed from disk on
+        cleanup.
     FirehosePath : string
         Path to firehose_get executable.
     Disease : string
         Dataset code to generate protein expression profiles for. Can be
         obtained using firehose_get -c.
-    Output : string
-        Path to be used for temporary downloading and unzipping mRNA
-        files. Downloads and extracted files will be removed from disk on
-        cleanup.
 
     Returns
     -------
