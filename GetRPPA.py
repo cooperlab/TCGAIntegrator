@@ -6,7 +6,7 @@ import subprocess
 import tarfile
 
 
-def GetRPPA(FirehosePath, Disease, Output):
+def GetRPPA(Output, FirehosePath, Disease):
     """Generates variables containing protein expression values from the RPPA
     platform. Uses Firebrowse, a tool from the Broad Genome Data
     Analysis Center to download RPPA array values from the Broad Institute
@@ -14,15 +14,15 @@ def GetRPPA(FirehosePath, Disease, Output):
 
     Parameters
     ----------
+    Output : string
+        Path to be used for temporary downloading and unzipping RPPA
+        files. Downloads and extracted files will be removed from disk on
+        cleanup.
     FirehosePath : string
         Path to firehose_get executable.
     Disease : string
         Dataset code to generate protein expression profiles for. Can be
         obtained using firehose_get -c.
-    Output : string
-        Path to be used for temporary downloading and unzipping RPPA
-        files. Downloads and extracted files will be removed from disk on
-        cleanup.
 
     Returns
     -------
