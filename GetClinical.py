@@ -8,16 +8,14 @@ import tarfile
 
 def GetClinical(Output, FirehosePath, Disease,
                 FilterCDEs=['age_at_initial_pathologic_diagnosis',
-                            'days_to_death', 'days_to_last_followup', 'gender',
-                            'histological_type', 'pathologic_stage',
+                            'gender', 'histological_type', 'pathologic_stage',
                             'pathology_M_stage', 'pathology_N_stage',
-                            'pathology_T_stage', 'race', 'radiation_therapy',
-                            'vital_status']):
+                            'pathology_T_stage', 'race', 'radiation_therapy']):
     """Generates variables containing clinical data values describing patient
-    demographics, disease phenotypes and treatment. Uses Firebrowse, a tool
-    from the Broad Genome Data Analysis Center to download clinical data values
-    from the Broad Institute servers. Automatically cleans up results on
-    completion.
+    demographics, disease phenotypes and treatment in addition to survival and
+    vital status at last followup. Uses Firebrowse, a tool from the Broad
+    Genome Data Analysis Center to download clinical data values from the Broad
+    Institute servers. Automatically cleans up results on completion.
 
     Parameters
     ----------
@@ -31,15 +29,15 @@ def GetClinical(Output, FirehosePath, Disease,
         Dataset code to generate protein expression profiles for. Can be
         obtained using firehose_get -c.
     FilterCDEs : list
-        List of strings defining the clinical data elements to return. Default
-        CDEs are selected as those defined for a broad set of diseases and
-        clinically-relevant.
+        List of strings defining the clinical data elements to return. Survival
+        defining terms including 'days_to_death', 'days_to_last_followup', and
+        'vital_status' are obtained by default and do not need to be defined
+        here. Default CDEs are selected as those defined for a broad set of
+        diseases and clinically-relevant.
         Default value = ['age_at_initial_pathologic_diagnosis',
-                         'days_to_death', 'days_to_last_followup', 'gender',
-                         'histological_type', 'pathologic_stage',
+                         'gender', 'histological_type', 'pathologic_stage',
                          'pathology_M_stage', 'pathology_N_stage',
-                         'pathology_T_stage', 'race', 'radiation_therapy',
-                         'vital_status']
+                         'pathology_T_stage', 'race', 'radiation_therapy']
 
     Returns
     -------
@@ -103,13 +101,28 @@ def GetClinical(Output, FirehosePath, Disease,
     CDEs = list(Contents[2:, 0])
     Values = Contents[2:, 1:]
 
-    # strip out clinical fields defined above
-    Indices = [CDEs.index(CDE) for CDE in FilterCDEs if CDE in CDEs]
-    CDEs = [CDE for CDE in FilterCDEs if CDE in CDEs]
-    Values = Values[Indices, :]
+    # convert barcodes to uppercase characters
+    Barcodes = [Barcode.upper() for Barcode in Barcodes]
 
     # replace missing values 'NA' with conversion-compatible 'NaN'
     Values[Values == 'NA'] = 'NaN'
+
+    # strip out required survival data
+    D2D = Values[CDEs.index('days_to_death'), :].astype(np.float)
+    D2LF = Values[CDEs.index('days_to_last_followup'), :].astype(np.float)
+    VS = Values[CDEs.index('vital_status'), :]
+
+    # convert survival data to numeric values
+    Censored = (VS == 'alive').astype(np.float)
+    Censored[VS == 'NaN'] = np.NaN
+    Survival = np.NaN * np.zeros(Censored.shape)
+    Survival[Censored == 1] = D2LF[Censored == 1]
+    Survival[Censored == 0] = D2D[Censored == 0]
+
+    # strip out user-defined clinical fields for features
+    Indices = [CDEs.index(CDE) for CDE in FilterCDEs if CDE in CDEs]
+    CDEs = [CDE for CDE in FilterCDEs if CDE in CDEs]
+    Values = Values[Indices, :]
 
     # iterate over CDEs, converting to numeric values
     Encoded = []
@@ -149,9 +162,11 @@ def GetClinical(Output, FirehosePath, Disease,
     shutil.rmtree(Output + Latest)
 
     # build named tuples for outputs
-    ClinicalTuple = namedtuple('Clinical', ['CDEs', 'Values', 'Barcodes',
-                                            'Type', 'Release'])
-    Clinical = ClinicalTuple(CDEs, Values, Barcodes, 'Clinical', Latest)
+    ClinicalTuple = namedtuple('Clinical', ['Survival', 'Censored', 'CDEs',
+                                            'Values', 'Barcodes', 'Type',
+                                            'Release'])
+    Clinical = ClinicalTuple(Survival, Censored, Names, Values, Barcodes,
+                             'Clinical', Latest)
 
     # return outputs
     return Clinical
