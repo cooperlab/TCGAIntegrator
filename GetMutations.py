@@ -7,7 +7,7 @@ import subprocess
 import tarfile
 
 
-def GetMutations(FirehosePath, Disease, Output, MutsigQ=0.1):
+def GetMutations(Output, FirehosePath, Disease, MutsigQ=0.1):
     """Generates variables containing mutation events with significance
     'MutsigQ' or greater. Uses Firebrowse, a tool from the Broad Genome Data
     Analysis Center to download Mutsig2CV results from the Broad Institute
@@ -16,15 +16,15 @@ def GetMutations(FirehosePath, Disease, Output, MutsigQ=0.1):
 
     Parameters
     ----------
+    Output : string
+        Path to be used for temporary downloading and unzipping Mutsig2CV
+        files. Downloads and extracted files will be removed from disk on
+        cleanup.
     FirehosePath : string
         Path to firehose_get executable.
     Disease : string
         Dataset code to generate somatic mutation profiles for. Can be obtained
         using firehose_get -c.
-    Output : string
-        Path to be used for temporary downloading and unzipping Mutsig2CV
-        files. Downloads and extracted files will be removed from disk on
-        cleanup.
     MutsigQ : double
         A scalar in the range [0, 1] specifying the Mutsig2CV significance
         threshold to use when filtering somatic mutation events.
