@@ -1,4 +1,5 @@
 from firebrowse import fbget
+from GetClinical import GetClinical
 from GetCopyNumber import GetCopyNumber
 from GetGeneExpression import GetGeneExpression
 from GetMutations import GetMutations
@@ -13,7 +14,13 @@ import zipfile
 
 
 def BuildDataset(Output, FirehosePath=None, Disease=None,
-                 CancerCensusFile=None, MutsigQ=0.1, GisticQ=0.25):
+                 CancerCensusFile=None, MutsigQ=0.1, GisticQ=0.25,
+                 FilterCDEs=['age_at_initial_pathologic_diagnosis',
+                             'days_to_death', 'days_to_last_followup',
+                             'gender', 'histological_type', 'pathologic_stage',
+                             'pathology_M_stage', 'pathology_N_stage',
+                             'pathology_T_stage', 'race', 'radiation_therapy',
+                             'vital_status']):
     """Generates TCGA data in python formats for mRNA expression, protein
     expression, copy number, mutation and clinical platforms. All data is
     automatically downloaded and curated from the Broad Institute GDAC using
@@ -47,6 +54,16 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
     GisticQ : double
         A scalar in the range [0, 1] specifying the GISTIC significance
         threshold to use when filtering copy-number events.
+    FilterCDEs : list
+        List of strings defining the clinical data elements to return. Default
+        CDEs are selected as those defined for a broad set of diseases and
+        clinically-relevant.
+        Default value = ['age_at_initial_pathologic_diagnosis',
+                         'days_to_death', 'days_to_last_followup', 'gender',
+                         'histological_type', 'pathologic_stage',
+                         'pathology_M_stage', 'pathology_N_stage',
+                         'pathology_T_stage', 'race', 'radiation_therapy',
+                         'vital_status']
 
     Returns
     -------
@@ -114,19 +131,27 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                          " of " + str(len(Diseases)) + "\n")
         sys.stdout.write("\tOutput will be generated in " + Output + "\n")
 
+        # generate clinical data
+        sys.stdout.write("\tClinical - generating data...")
+        Start = timeit.timeit()
+        Clinical = GetClinical(Output + Prefixes[Index], FirehosePath,
+                               Cohort)
+        sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
+                         " seconds.\n")
+
         # generate mutation
         sys.stdout.write("\tMutations - generating data...")
         Start = timeit.timeit()
-        Mutations = GetMutations(FirehosePath, Cohort,
-                                 Output + Prefixes[Index])
+        Mutations = GetMutations(Output + Prefixes[Index], FirehosePath,
+                                 Cohort)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
 
         # generate copy number
         sys.stdout.write("\tCopy Number - generating data...")
         Start = timeit.timeit()
-        (CNVArm, CNVGene) = GetCopyNumber(FirehosePath, Cohort, Output +
-                                          Prefixes[Index], GisticQ,
+        (CNVArm, CNVGene) = GetCopyNumber(Output + Prefixes[Index],
+                                          FirehosePath, Cohort, GisticQ,
                                           CancerGenes)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
@@ -134,47 +159,54 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         # generate RPPA
         sys.stdout.write("\tProtein Expression - generating data,")
         Start = timeit.timeit()
-        Protein = GetRPPA(FirehosePath, Cohort, Output + Prefixes[Index])
+        Protein = GetRPPA(Output + Prefixes[Index], FirehosePath, Cohort)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
 
-        # genearte gene expression
+        # generate gene expression
         sys.stdout.write("\tmRNA expression - generating data,")
         Start = timeit.timeit()
-        mRNA = GetGeneExpression(FirehosePath, Cohort,
-                                 Output + Prefixes[Index])
+        mRNA = GetGeneExpression(Output + Prefixes[Index], FirehosePath,
+                                 Cohort)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
 
         # build feature names list
+        ClinicalSymbols = [CDE + "_Clinical" for CDE in Clinical.CDEs]
         MutationSymbols = [Symbol + "_Mut" for Symbol in Mutations.Symbols]
         CNVGeneSymbols = [Symbol + "_CNV" for Symbol in CNVGene.Symbols]
         CNVArmSymbols = [Symbol + "_CNVArm" for Symbol in CNVArm.Symbols]
         ProteinSymbols = [Symbol + "_Protein" for Symbol in Protein.Symbols]
         mRNASymbols = [Symbol + "_mRNA" for Symbol in mRNA.Symbols]
-        Symbols = MutationSymbols + CNVGeneSymbols + CNVArmSymbols +\
-            ProteinSymbols + mRNASymbols
+        Symbols = ClinicalSymbols + MutationSymbols + CNVGeneSymbols +\
+            CNVArmSymbols + ProteinSymbols + mRNASymbols
 
         # build feature types list
+        ClinicalTypes = ["Clinical" for CDE in Clinical.CDEs]
         MutationTypes = ["Mutation" for Symbol in Mutations.Symbols]
         CNVGeneTypes = ["CNV-Gene" for Symbol in CNVGene.Symbols]
         CNVArmTypes = ["CNV-Arm" for Symbol in CNVArm.Symbols]
         ProteinTypes = ["Protein" for Symbol in Protein.Symbols]
         mRNATypes = ["mRNA" for Symbol in mRNA.Symbols]
-        SymbolTypes = MutationTypes + CNVGeneTypes + CNVArmTypes +\
-            ProteinTypes + mRNATypes
+        SymbolTypes = ClinicalTypes + MutationTypes + CNVGeneTypes +\
+            CNVArmTypes + ProteinTypes + mRNATypes
 
         # build comprehensive sample list, tissue types
+        ClinicalSamples = [Barcode[0:15] for Barcode in Clinical.Barcodes]
         MutationSamples = [Barcode[0:15] for Barcode in Mutations.Barcodes]
         CNVGeneSamples = [Barcode[0:15] for Barcode in CNVGene.Barcodes]
         CNVArmSamples = [Barcode[0:15] for Barcode in CNVArm.Barcodes]
         ProteinSamples = [Barcode[0:15] for Barcode in Protein.Barcodes]
         mRNASamples = [Barcode[0:15] for Barcode in mRNA.Barcodes]
-        Samples = list(set(MutationSamples + CNVGeneSamples + CNVArmSamples +
-                           ProteinSamples + mRNASamples))
+        Samples = list(set(ClinicalSamples + MutationSamples + CNVGeneSamples +
+                           CNVArmSamples + ProteinSamples + mRNASamples))
         TissueType = [int(Sample[13:15]) for Sample in Samples]
 
         # reshape arrays from each datatype to match order, size of 'Samples'
+        Indices = [Samples.index(Sample) for Sample in ClinicalSamples]
+        ClinicalMapped = np.NaN * np.ones((len(ClinicalSymbols), len(Samples)))
+        ClinicalMapped[:, Indices] = Clinical.Values
+
         Indices = [Samples.index(Sample) for Sample in MutationSamples]
         MutationsMapped = np.NaN * np.ones((len(MutationSymbols),
                                             len(Samples)))
@@ -197,8 +229,8 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         mRNAMapped[:, Indices] = mRNA.Expression
 
         # stack into master table
-        Features = np.vstack((MutationsMapped, CNVGeneMapped, CNVArmMapped,
-                              ProteinMapped, mRNAMapped))
+        Features = np.vstack((ClinicalMapped, MutationsMapped, CNVGeneMapped,
+                              CNVArmMapped, ProteinMapped, mRNAMapped))
 
         # write outputs to disk
         File = open(Output + Prefixes[Index] + Cohort + ".Data.p", 'w')
