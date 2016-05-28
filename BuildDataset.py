@@ -59,11 +59,9 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         CDEs are selected as those defined for a broad set of diseases and
         clinically-relevant.
         Default value = ['age_at_initial_pathologic_diagnosis',
-                         'days_to_death', 'days_to_last_followup', 'gender',
-                         'histological_type', 'pathologic_stage',
+                         'gender', 'histological_type', 'pathologic_stage',
                          'pathology_M_stage', 'pathology_N_stage',
-                         'pathology_T_stage', 'race', 'radiation_therapy',
-                         'vital_status']
+                         'pathology_T_stage', 'race', 'radiation_therapy']
 
     Returns
     -------
@@ -191,22 +189,29 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         SymbolTypes = ClinicalTypes + MutationTypes + CNVGeneTypes +\
             CNVArmTypes + ProteinTypes + mRNATypes
 
-        # build comprehensive sample list, tissue types
-        ClinicalSamples = [Barcode[0:15] for Barcode in Clinical.Barcodes]
+        # build comprehensive sample list for molecular types, get tissue code
         MutationSamples = [Barcode[0:15] for Barcode in Mutations.Barcodes]
         CNVGeneSamples = [Barcode[0:15] for Barcode in CNVGene.Barcodes]
         CNVArmSamples = [Barcode[0:15] for Barcode in CNVArm.Barcodes]
         ProteinSamples = [Barcode[0:15] for Barcode in Protein.Barcodes]
         mRNASamples = [Barcode[0:15] for Barcode in mRNA.Barcodes]
-        Samples = list(set(ClinicalSamples + MutationSamples + CNVGeneSamples +
+        Samples = list(set(MutationSamples + CNVGeneSamples +
                            CNVArmSamples + ProteinSamples + mRNASamples))
         TissueType = [int(Sample[13:15]) for Sample in Samples]
 
-        # reshape arrays from each datatype to match order, size of 'Samples'
-        Indices = [Samples.index(Sample) for Sample in ClinicalSamples]
+        # map clinical samples with short barcodes to 'Samples'
         ClinicalMapped = np.NaN * np.ones((len(ClinicalSymbols), len(Samples)))
-        ClinicalMapped[:, Indices] = Clinical.Values
+        Survival = np.NaN * np.ones((1, len(Samples)))
+        Censored = np.NaN * np.ones((1, len(Samples)))
+        for Current, ClinicalSample in enumerate(ClinicalSamples):
+            Indices = [Ind for Ind, Sample in enumerate(Samples)
+                       if Sample[0:12] == ClinicalSample]
+            ClinicalMapped[:, Indices] = \
+                Clinical.Values[:, Current, np.newaxis]
+            Survival[Indices] = Clinical.Survival[Current]
+            Censored[Indices] = Clinical.Censored[Current]
 
+        # reshape arrays from molecular data to match order, size of 'Samples'
         Indices = [Samples.index(Sample) for Sample in MutationSamples]
         MutationsMapped = np.NaN * np.ones((len(MutationSymbols),
                                             len(Samples)))
@@ -239,6 +244,8 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         pickle.dump(Samples, File)
         pickle.dump(TissueType, File)
         pickle.dump(Features, File)
+        pickle.dump(Survival, File)
+        pickle.dump(Censored, File)
         File.close()
 
     return
