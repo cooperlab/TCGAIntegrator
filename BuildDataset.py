@@ -200,9 +200,10 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         TissueType = [int(Sample[13:15]) for Sample in Samples]
 
         # map clinical samples with short barcodes to 'Samples'
+        ClinicalSamples = Clinical.Barcodes
         ClinicalMapped = np.NaN * np.ones((len(ClinicalSymbols), len(Samples)))
-        Survival = np.NaN * np.ones((1, len(Samples)))
-        Censored = np.NaN * np.ones((1, len(Samples)))
+        Survival = np.NaN * np.ones((len(Samples)))
+        Censored = np.NaN * np.ones((len(Samples)))
         for Current, ClinicalSample in enumerate(ClinicalSamples):
             Indices = [Ind for Ind, Sample in enumerate(Samples)
                        if Sample[0:12] == ClinicalSample]
