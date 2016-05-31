@@ -45,9 +45,9 @@ Deactivate the virtual environment when the script is finished running:
 
 # Description of Outputs
 The script generates a pickle file containing the following variables:
-1. Features - a D x N float numpy array where each column contains the integrated profile of a sample, and each row represents a single clinical/genomic feature.1
-2. Symbols - a D-length list containing the names of the symbols. These can be gene symbols, chromosome arms, or CDEs. Each symbol is appended with the feature type ('Clinical', 'Mut', 'CNV', 'CNVArm', 'Protein', or 'mRNA')2
-3. SymbolTypes - a D-length list containing stand-alone feature types 'Clinical', 'Mut', 'CNV', 'CNVArm', 'Protein', or 'mRNA'.3
-4. Samples - an N-length list containing the TCGA barcodes of each sample TCGA-XX-YYYY-ZZ.4
-5. Survival - an N-length float numpy array containing the death or last followup times in days for each sample. These are obtained from the CDEs 'days_to_death', 'days_to_last_followup' and 'vital_status'.5
-6. Censored - an N-length float numpy array containing the right-censoring status of each sample. A value of '1' indicates samples where the patient was alive at last followup and a value of '0' indicates uncensored samples where a death even was observed.6
+1. Features - a D x N float numpy array where each column contains the integrated profile of a sample, and each row represents a single clinical/genomic feature.  
+2. Symbols - a D-length list containing the names of the symbols. These can be gene symbols, chromosome arms, or CDEs. Each symbol is appended with the feature type ('Clinical', 'Mut', 'CNV', 'CNVArm', 'Protein', or 'mRNA')  
+3. SymbolTypes - a D-length list containing stand-alone feature types 'Clinical', 'Mut', 'CNV', 'CNVArm', 'Protein', or 'mRNA'.  
+4. Samples - an N-length list containing the TCGA barcodes of each sample TCGA-XX-YYYY-ZZ.  
+5. Survival - an N-length float numpy array containing the death or last followup times in days for each sample. These are obtained from the CDEs 'days_to_death', 'days_to_last_followup' and 'vital_status'.  
+6. Censored - an N-length float numpy array containing the right-censoring status of each sample. A value of '1' indicates samples where the patient was alive at last followup and a value of '0' indicates uncensored samples where a death even was observed.  
