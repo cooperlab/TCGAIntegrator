@@ -20,7 +20,7 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                              'gender', 'histological_type', 'pathologic_stage',
                              'pathology_M_stage', 'pathology_N_stage',
                              'pathology_T_stage', 'race', 'radiation_therapy',
-                             'vital_status']):
+                             'vital_status'], SampleCodes=[1, 2]):
     """Generates TCGA data in python formats for mRNA expression, protein
     expression, copy number, mutation and clinical platforms. All data is
     automatically downloaded and curated from the Broad Institute GDAC using
@@ -62,6 +62,11 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                          'gender', 'histological_type', 'pathologic_stage',
                          'pathology_M_stage', 'pathology_N_stage',
                          'pathology_T_stage', 'race', 'radiation_therapy']
+    SamplesCodes : list
+        List of integer codes identifying sample types to keep. The full list
+        of sample type codes can be found at https://tcga-data.nci.nih.gov.
+        The default value corresponds to 1 - primary tumor and 2 - recurrent
+        tumor. Default value = [1, 2].
 
     Returns
     -------
@@ -197,7 +202,12 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         mRNASamples = [Barcode[0:15] for Barcode in mRNA.Barcodes]
         Samples = list(set(MutationSamples + CNVGeneSamples +
                            CNVArmSamples + ProteinSamples + mRNASamples))
-        TissueType = [int(Sample[13:15]) for Sample in Samples]
+        Samples.sort()
+        SampleTypes = [int(Sample[13:15]) for Sample in Samples]
+
+        # filter out non-primary tumor tissue types
+        Samples = [Sample for Index, Sample in enumerate(Samples)
+                   if SampleTypes[Index] in SampleCodes]
 
         # map clinical samples with short barcodes to 'Samples'
         ClinicalSamples = Clinical.Barcodes
@@ -243,7 +253,6 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         pickle.dump(Symbols, File)
         pickle.dump(SymbolTypes, File)
         pickle.dump(Samples, File)
-        pickle.dump(TissueType, File)
         pickle.dump(Features, File)
         pickle.dump(Survival, File)
         pickle.dump(Censored, File)
