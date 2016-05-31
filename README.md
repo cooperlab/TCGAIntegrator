@@ -45,6 +45,7 @@ Deactivate the virtual environment when the script is finished running:
 
 # Description of Outputs
 The script generates a pickle file containing the following variables:
+
 1. Features - a D x N float numpy array where each column contains the integrated profile of a sample, and each row represents a single clinical/genomic feature.  
 2. Symbols - a D-length list containing the names of the symbols. These can be gene symbols, chromosome arms, or CDEs. Each symbol is appended with the feature type ('Clinical', 'Mut', 'CNV', 'CNVArm', 'Protein', or 'mRNA')  
 3. SymbolTypes - a D-length list containing stand-alone feature types 'Clinical', 'Mut', 'CNV', 'CNVArm', 'Protein', or 'mRNA'.  
