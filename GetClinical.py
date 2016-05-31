@@ -150,7 +150,7 @@ def GetClinical(Output, FirehosePath, Disease,
                     for k in range(len(Encode)):
                         if(Values[i, k] == 'NaN'):
                             Encode[k] = np.NaN
-                    Name = CDEs[i] + 'Is' + Dict[j]
+                    Name = CDEs[i] + '-Is-' + Dict[j]
                     Encoded.append(Encode)
                     Names.append(Name)
 
