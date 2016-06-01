@@ -223,26 +223,31 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
             Censored[Indices] = Clinical.Censored[Current]
 
         # reshape arrays from molecular data to match order, size of 'Samples'
-        Indices = [Samples.index(Sample) for Sample in MutationSamples]
+        Indices = [Samples.index(Sample) for Sample in MutationSamples if Sample in Samples]
+        Mapped = [Index for Index, Sample in enumerate(MutationSamples) if Sample in Samples]
         MutationsMapped = np.NaN * np.ones((len(MutationSymbols),
                                             len(Samples)))
-        MutationsMapped[:, Indices] = Mutations.Binary
+        MutationsMapped[:, Indices] = Mutations.Binary[:, Mapped]
 
-        Indices = [Samples.index(Sample) for Sample in CNVGeneSamples]
+        Indices = [Samples.index(Sample) for Sample in CNVGeneSamples if Sample in Samples]
+        Mapped = [Index for Index, Sample in enumerate(CNVGeneSamples) if Sample in Samples]
         CNVGeneMapped = np.NaN * np.ones((len(CNVGeneSymbols), len(Samples)))
-        CNVGeneMapped[:, Indices] = CNVGene.CNV
+        CNVGeneMapped[:, Indices] = CNVGene.CNV[:, Mapped]
 
-        Indices = [Samples.index(Sample) for Sample in CNVArmSamples]
+        Indices = [Samples.index(Sample) for Sample in CNVArmSamples if Sample in Samples]
+        Mapped = [Index for Index, Sample in enumerate(CNVArmSamples) if Sample in Samples]
         CNVArmMapped = np.NaN * np.ones((len(CNVArmSymbols), len(Samples)))
-        CNVArmMapped[:, Indices] = CNVArm.CNV
+        CNVArmMapped[:, Indices] = CNVArm.CNV[:, Mapped]
 
-        Indices = [Samples.index(Sample) for Sample in ProteinSamples]
+        Indices = [Samples.index(Sample) for Sample in ProteinSamples if Sample in Samples]
+        Mapped = [Index for Index, Sample in enumerate(ProteinSamples) if Sample in Samples]
         ProteinMapped = np.NaN * np.ones((len(ProteinSymbols), len(Samples)))
-        ProteinMapped[:, Indices] = Protein.Expression
+        ProteinMapped[:, Indices] = Protein.Expression[:, Mapped]
 
-        Indices = [Samples.index(Sample) for Sample in mRNASamples]
+        Indices = [Samples.index(Sample) for Sample in mRNASamples if Sample in Samples]
+        Mapped = [Index for Index, Sample in enumerate(mRNASamples) if Sample in Samples]
         mRNAMapped = np.NaN * np.ones((len(mRNASymbols), len(Samples)))
-        mRNAMapped[:, Indices] = mRNA.Expression
+        mRNAMapped[:, Indices] = mRNA.Expression[:, Mapped]
 
         # stack into master table
         Features = np.vstack((ClinicalMapped, MutationsMapped, CNVGeneMapped,
