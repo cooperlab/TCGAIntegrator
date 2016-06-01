@@ -1,5 +1,5 @@
 ## TCGAIntegrator
-TCGAIntegrator is a tool for building python variables taht contain sample-level integrated views of TCGA projects. Given a disease type, TCGAIntegrator will use Firehose (Broad Institute) to programmatically access databases at the Broad Institute Genome Data Analysis Center to download the latest clinical, mutation, arm-level copy number, focal copy number, protein expression and gene/mRNA expression data. User provided thresholds are used with Mutsig2CV and GISTIC2 analyses to filter non-significant mutation and copy number events from the integration. A standard set of Clinical Data Elements (CDEs) are defined and integrated by default to capture basic demographic (age, gender, race) survival (time-to-event and vital status at last followup) and treatment (radiation therapy) information. Additional CDEs and their descriptions can be found here: https://tcga-data.nci.nih.gov/docs/dictionary/.
+TCGAIntegrator is a tool for building python variables taht contain sample-level integrated views of TCGA projects. Given a disease type, TCGAIntegrator will use Firehose (developed by the Broad Institute) to programmatically access databases at the Broad Institute Genome Data Analysis Center to download and integrate the latest clinical, mutation, arm-level copy number, focal copy number, protein expression and gene/mRNA expression data. User provided thresholds are used with Mutsig2CV and GISTIC2 analyses to filter non-significant mutation and copy number events from the integration. A standard set of Clinical Data Elements (CDEs) are defined and integrated by default to capture basic demographic (age, gender, race) survival (time-to-event and vital status at last followup) and treatment (radiation therapy) information. Additional CDEs and their descriptions can be found here: https://tcga-data.nci.nih.gov/docs/dictionary/. A full list of available projects from Firehose is available here: https://gdac.broadinstitute.org/.
 
 ## Dependencies
 TCGAIntegrator requires the *requests*, *firebrowse* and *numpy* packages.
@@ -47,9 +47,9 @@ Deactivate the virtual environment when the script is finished running:
 The script generates a pickle file containing the following variables:
 
 1. Features - a D x N float numpy array where each column contains the integrated profile of a sample, and each row represents a single clinical/genomic feature.  
-2. Symbols - a D-length list containing the names of the symbols. These can be gene symbols, chromosome arms, or CDEs. Each symbol is appended with the feature type ('Clinical', 'Mut', 'CNV', 'CNVArm', 'Protein', or 'mRNA')  
-3. SymbolTypes - a D-length list containing stand-alone feature types 'Clinical', 'Mut', 'CNV', 'CNVArm', 'Protein', or 'mRNA'.  
-4. Samples - an N-length list containing the TCGA barcodes of each sample TCGA-XX-YYYY-ZZ.  
+2. Symbols - a D-length list of strings containing the feature names. These can be gene symbols, chromosome arms, or CDEs. Each symbol is appended with the feature type ('Clinical', 'Mut', 'CNV', 'CNVArm', 'Protein', or 'mRNA')  
+3. SymbolTypes - a D-length list of strings containing stand-alone feature types 'Clinical', 'Mut', 'CNV', 'CNVArm', 'Protein', or 'mRNA'.  
+4. Samples - an N-length list of strings containing the TCGA barcodes of each sample TCGA-XX-YYYY-ZZ.  
 5. Survival - an N-length float numpy array containing the death or last followup times in days for each sample. These are obtained from the CDEs 'days_to_death', 'days_to_last_followup' and 'vital_status'.  
 6. Censored - an N-length float numpy array containing the right-censoring status of each sample. A value of '1' indicates samples where the patient was alive at last followup and a value of '0' indicates uncensored samples where a death even was observed.  
 
