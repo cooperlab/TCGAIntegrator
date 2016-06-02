@@ -127,17 +127,18 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         CancerGenes = None
 
     # iterate over each disease type, generating output and updating console
-    for Index, Cohort in enumerate(Diseases):
+    for CohortIndex, Cohort in enumerate(Diseases):
 
         # write disease type to console
-        sys.stdout.write("Processing " + Cohort + ", Disease " + str(Index+1) +
-                         " of " + str(len(Diseases)) + "\n")
+        sys.stdout.write("Processing " + Cohort + ", Disease " +
+                         str(CohortIndex+1) + " of " + str(len(Diseases)) +
+                         "\n")
         sys.stdout.write("\tOutput will be generated in " + Output + "\n")
 
         # generate clinical data
         sys.stdout.write("\tClinical - generating data...")
         Start = timeit.timeit()
-        Clinical = GetClinical(Output + Prefixes[Index], FirehosePath,
+        Clinical = GetClinical(Output + Prefixes[CohortIndex], FirehosePath,
                                Cohort)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
@@ -145,7 +146,7 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         # generate mutation
         sys.stdout.write("\tMutations - generating data...")
         Start = timeit.timeit()
-        Mutations = GetMutations(Output + Prefixes[Index], FirehosePath,
+        Mutations = GetMutations(Output + Prefixes[CohortIndex], FirehosePath,
                                  Cohort)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
@@ -153,7 +154,7 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         # generate copy number
         sys.stdout.write("\tCopy Number - generating data...")
         Start = timeit.timeit()
-        (CNVArm, CNVGene) = GetCopyNumber(Output + Prefixes[Index],
+        (CNVArm, CNVGene) = GetCopyNumber(Output + Prefixes[CohortIndex],
                                           FirehosePath, Cohort, GisticQ,
                                           CancerGenes)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
@@ -162,14 +163,14 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         # generate RPPA
         sys.stdout.write("\tProtein Expression - generating data,")
         Start = timeit.timeit()
-        Protein = GetRPPA(Output + Prefixes[Index], FirehosePath, Cohort)
+        Protein = GetRPPA(Output + Prefixes[CohortIndex], FirehosePath, Cohort)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
 
         # generate gene expression
         sys.stdout.write("\tmRNA expression - generating data,")
         Start = timeit.timeit()
-        mRNA = GetGeneExpression(Output + Prefixes[Index], FirehosePath,
+        mRNA = GetGeneExpression(Output + Prefixes[CohortIndex], FirehosePath,
                                  Cohort)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
@@ -223,29 +224,39 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
             Censored[Indices] = Clinical.Censored[Current]
 
         # reshape arrays from molecular data to match order, size of 'Samples'
-        Indices = [Samples.index(Sample) for Sample in MutationSamples if Sample in Samples]
-        Mapped = [Index for Index, Sample in enumerate(MutationSamples) if Sample in Samples]
+        Indices = [Samples.index(Sample) for Sample in MutationSamples if
+                   Sample in Samples]
+        Mapped = [Index for Index, Sample in enumerate(MutationSamples) if
+                  Sample in Samples]
         MutationsMapped = np.NaN * np.ones((len(MutationSymbols),
                                             len(Samples)))
         MutationsMapped[:, Indices] = Mutations.Binary[:, Mapped]
 
-        Indices = [Samples.index(Sample) for Sample in CNVGeneSamples if Sample in Samples]
-        Mapped = [Index for Index, Sample in enumerate(CNVGeneSamples) if Sample in Samples]
+        Indices = [Samples.index(Sample) for Sample in CNVGeneSamples if
+                   Sample in Samples]
+        Mapped = [Index for Index, Sample in enumerate(CNVGeneSamples) if
+                  Sample in Samples]
         CNVGeneMapped = np.NaN * np.ones((len(CNVGeneSymbols), len(Samples)))
         CNVGeneMapped[:, Indices] = CNVGene.CNV[:, Mapped]
 
-        Indices = [Samples.index(Sample) for Sample in CNVArmSamples if Sample in Samples]
-        Mapped = [Index for Index, Sample in enumerate(CNVArmSamples) if Sample in Samples]
+        Indices = [Samples.index(Sample) for Sample in CNVArmSamples if
+                   Sample in Samples]
+        Mapped = [Index for Index, Sample in enumerate(CNVArmSamples) if
+                  Sample in Samples]
         CNVArmMapped = np.NaN * np.ones((len(CNVArmSymbols), len(Samples)))
         CNVArmMapped[:, Indices] = CNVArm.CNV[:, Mapped]
 
-        Indices = [Samples.index(Sample) for Sample in ProteinSamples if Sample in Samples]
-        Mapped = [Index for Index, Sample in enumerate(ProteinSamples) if Sample in Samples]
+        Indices = [Samples.index(Sample) for Sample in ProteinSamples if
+                   Sample in Samples]
+        Mapped = [Index for Index, Sample in enumerate(ProteinSamples) if
+                  Sample in Samples]
         ProteinMapped = np.NaN * np.ones((len(ProteinSymbols), len(Samples)))
         ProteinMapped[:, Indices] = Protein.Expression[:, Mapped]
 
-        Indices = [Samples.index(Sample) for Sample in mRNASamples if Sample in Samples]
-        Mapped = [Index for Index, Sample in enumerate(mRNASamples) if Sample in Samples]
+        Indices = [Samples.index(Sample) for Sample in mRNASamples if
+                   Sample in Samples]
+        Mapped = [Index for Index, Sample in enumerate(mRNASamples) if
+                  Sample in Samples]
         mRNAMapped = np.NaN * np.ones((len(mRNASymbols), len(Samples)))
         mRNAMapped[:, Indices] = mRNA.Expression[:, Mapped]
 
@@ -254,7 +265,7 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                               CNVArmMapped, ProteinMapped, mRNAMapped))
 
         # write outputs to disk
-        File = open(Output + Prefixes[Index] + Cohort + ".Data.p", 'w')
+        File = open(Output + Prefixes[CohortIndex] + Cohort + ".Data.p", 'w')
         pickle.dump(Symbols, File)
         pickle.dump(SymbolTypes, File)
         pickle.dump(Samples, File)
