@@ -139,7 +139,7 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         sys.stdout.write("\tClinical - generating data...")
         Start = timeit.timeit()
         Clinical = GetClinical(Output + Prefixes[CohortIndex], FirehosePath,
-                               Cohort)
+                               Cohort, FilterCDEs)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
 
@@ -147,7 +147,7 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         sys.stdout.write("\tMutations - generating data...")
         Start = timeit.timeit()
         Mutations = GetMutations(Output + Prefixes[CohortIndex], FirehosePath,
-                                 Cohort)
+                                 Cohort, MutsigQ)
         sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
                          " seconds.\n")
 
