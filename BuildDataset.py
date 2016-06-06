@@ -222,8 +222,10 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                 Clinical.Values[:, Current, np.newaxis]
             Survival[Indices] = Clinical.Survival[Current]
             Censored[Indices] = Clinical.Censored[Current]
+        AvailableClinical = [True if Sample[0:12] in ClinicalSamples else False
+                             for Sample in Samples]
 
-        # reshape arrays from molecular data to match order, size of 'Samples'
+        # reshape arrays from mutation data to match order, size of 'Samples'
         Indices = [Samples.index(Sample) for Sample in MutationSamples if
                    Sample in Samples]
         Mapped = [Index for Index, Sample in enumerate(MutationSamples) if
@@ -231,14 +233,18 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         MutationsMapped = np.NaN * np.ones((len(MutationSymbols),
                                             len(Samples)))
         MutationsMapped[:, Indices] = Mutations.Binary[:, Mapped]
+        AvailableMutation = [True if Sample in MutationSamples else False
+                             for Sample in Samples]
 
+        # reshape arrays from CNV data to match order, size of 'Samples'
         Indices = [Samples.index(Sample) for Sample in CNVGeneSamples if
                    Sample in Samples]
         Mapped = [Index for Index, Sample in enumerate(CNVGeneSamples) if
                   Sample in Samples]
         CNVGeneMapped = np.NaN * np.ones((len(CNVGeneSymbols), len(Samples)))
         CNVGeneMapped[:, Indices] = CNVGene.CNV[:, Mapped]
-
+        AvailableCNV = [True if Sample in CNVGeneSamples else False
+                        for Sample in Samples]
         Indices = [Samples.index(Sample) for Sample in CNVArmSamples if
                    Sample in Samples]
         Mapped = [Index for Index, Sample in enumerate(CNVArmSamples) if
@@ -246,20 +252,26 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         CNVArmMapped = np.NaN * np.ones((len(CNVArmSymbols), len(Samples)))
         CNVArmMapped[:, Indices] = CNVArm.CNV[:, Mapped]
 
+        # reshape arrays from Protein data to match order, size of 'Samples'
         Indices = [Samples.index(Sample) for Sample in ProteinSamples if
                    Sample in Samples]
         Mapped = [Index for Index, Sample in enumerate(ProteinSamples) if
                   Sample in Samples]
         ProteinMapped = np.NaN * np.ones((len(ProteinSymbols), len(Samples)))
         ProteinMapped[:, Indices] = Protein.Expression[:, Mapped]
-
+        AvailableProtein = [True if Sample in ProteinSamples else False
+                            for Sample in Samples]
+                            
+        # reshape arrays from Protein data to match order, size of 'Samples'
         Indices = [Samples.index(Sample) for Sample in mRNASamples if
                    Sample in Samples]
         Mapped = [Index for Index, Sample in enumerate(mRNASamples) if
                   Sample in Samples]
         mRNAMapped = np.NaN * np.ones((len(mRNASymbols), len(Samples)))
         mRNAMapped[:, Indices] = mRNA.Expression[:, Mapped]
-
+        AvailablemRNA = [True if Sample in mRNASamples else False
+                        for Sample in Samples]
+                        
         # stack into master table
         Features = np.vstack((ClinicalMapped, MutationsMapped, CNVGeneMapped,
                               CNVArmMapped, ProteinMapped, mRNAMapped))
@@ -272,6 +284,11 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         pickle.dump(Features, File)
         pickle.dump(Survival, File)
         pickle.dump(Censored, File)
+        pickle.dump(AvailableClinical, File)
+        pickle.dump(AvailableMutation, File)
+        pickle.dump(AvailableCNV, File)
+        pickle.dump(AvailableProtein, File)
+        pickle.dump(AvailablemRNA, File)
         File.close()
 
     return
