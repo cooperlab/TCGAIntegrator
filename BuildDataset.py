@@ -188,8 +188,8 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         # build feature types list
         ClinicalTypes = ["Clinical" for CDE in Clinical.CDEs]
         MutationTypes = ["Mutation" for Symbol in Mutations.Symbols]
-        CNVGeneTypes = ["CNV-Gene" for Symbol in CNVGene.Symbols]
-        CNVArmTypes = ["CNV-Arm" for Symbol in CNVArm.Symbols]
+        CNVGeneTypes = ["CNVGene" for Symbol in CNVGene.Symbols]
+        CNVArmTypes = ["CNVArm" for Symbol in CNVArm.Symbols]
         ProteinTypes = ["Protein" for Symbol in Protein.Symbols]
         mRNATypes = ["mRNA" for Symbol in mRNA.Symbols]
         SymbolTypes = ClinicalTypes + MutationTypes + CNVGeneTypes +\
