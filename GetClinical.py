@@ -9,8 +9,8 @@ import tarfile
 def GetClinical(Output, FirehosePath, Disease,
                 FilterCDEs=['age_at_initial_pathologic_diagnosis',
                             'gender', 'histological_type', 'pathologic_stage',
-                            'pathology_M_stage', 'pathology_N_stage',
-                            'pathology_T_stage', 'race', 'radiation_therapy']):
+                            'pathologic_m', 'pathologic_n',
+                            'pathologic_t', 'race', 'radiation_therapy']):
     """Generates variables containing clinical data values describing patient
     demographics, disease phenotypes and treatment in addition to survival and
     vital status at last followup. Uses Firebrowse, a tool from the Broad
@@ -36,8 +36,8 @@ def GetClinical(Output, FirehosePath, Disease,
         diseases and clinically-relevant.
         Default value = ['age_at_initial_pathologic_diagnosis',
                          'gender', 'histological_type', 'pathologic_stage',
-                         'pathology_M_stage', 'pathology_N_stage',
-                         'pathology_T_stage', 'race', 'radiation_therapy']
+                         'pathologic_m', 'pathologic_n',
+                         'pathologic_t', 'race', 'radiation_therapy']
 
     Returns
     -------
