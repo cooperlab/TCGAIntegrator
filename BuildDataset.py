@@ -18,8 +18,8 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                  FilterCDEs=['age_at_initial_pathologic_diagnosis',
                              'days_to_death', 'days_to_last_followup',
                              'gender', 'histological_type', 'pathologic_stage',
-                             'pathology_M_stage', 'pathology_N_stage',
-                             'pathology_T_stage', 'race', 'radiation_therapy',
+                             'pathologic_m', 'pathologic_n',
+                             'pathologic_t', 'race', 'radiation_therapy',
                              'vital_status'], SampleCodes=[1, 2]):
     """Generates TCGA data in python formats for mRNA expression, protein
     expression, copy number, mutation and clinical platforms. All data is
@@ -60,8 +60,8 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         clinically-relevant.
         Default value = ['age_at_initial_pathologic_diagnosis',
                          'gender', 'histological_type', 'pathologic_stage',
-                         'pathology_M_stage', 'pathology_N_stage',
-                         'pathology_T_stage', 'race', 'radiation_therapy']
+                         'pathologic_m', 'pathologic_n',
+                         'pathologic_t', 'race', 'radiation_therapy']
     SamplesCodes : list
         List of integer codes identifying sample types to keep. The full list
         of sample type codes can be found at https://tcga-data.nci.nih.gov.
