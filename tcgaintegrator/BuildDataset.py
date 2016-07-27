@@ -6,10 +6,10 @@ from GetMutations import GetMutations
 from GetRPPA import GetRPPA
 import numpy as np
 import os
-import pickle
+import scipy.io as io
 import subprocess
 import sys
-import timeit
+import time
 import zipfile
 
 
@@ -82,6 +82,9 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
 
     # download firehose_get if path not provided
     if FirehosePath is None:
+        
+        # set flag to remove executable later
+        Remove = True
 
         # make output directory of not available
         if not os.path.isdir(Output):
@@ -137,42 +140,42 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
 
         # generate clinical data
         sys.stdout.write("\tClinical - generating data...")
-        Start = timeit.timeit()
+        Start = time.time()
         Clinical = GetClinical(Output + Prefixes[CohortIndex], FirehosePath,
                                Cohort, FilterCDEs)
-        sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
+        sys.stdout.write(" done in " + str(time.time()-Start) +
                          " seconds.\n")
 
         # generate mutation
         sys.stdout.write("\tMutations - generating data...")
-        Start = timeit.timeit()
+        Start = time.time()
         Mutations = GetMutations(Output + Prefixes[CohortIndex], FirehosePath,
                                  Cohort, MutsigQ)
-        sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
+        sys.stdout.write(" done in " + str(time.time()-Start) +
                          " seconds.\n")
 
         # generate copy number
         sys.stdout.write("\tCopy Number - generating data...")
-        Start = timeit.timeit()
+        Start = time.time()
         (CNVArm, CNVGene) = GetCopyNumber(Output + Prefixes[CohortIndex],
                                           FirehosePath, Cohort, GisticQ,
                                           CancerGenes)
-        sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
+        sys.stdout.write(" done in " + str(time.time()-Start) +
                          " seconds.\n")
 
         # generate RPPA
         sys.stdout.write("\tProtein Expression - generating data,")
-        Start = timeit.timeit()
+        Start = time.time()
         Protein = GetRPPA(Output + Prefixes[CohortIndex], FirehosePath, Cohort)
-        sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
+        sys.stdout.write(" done in " + str(time.time()-Start) +
                          " seconds.\n")
 
         # generate gene expression
         sys.stdout.write("\tmRNA expression - generating data,")
-        Start = timeit.timeit()
+        Start = time.time()
         mRNA = GetGeneExpression(Output + Prefixes[CohortIndex], FirehosePath,
                                  Cohort)
-        sys.stdout.write(" done in " + str(timeit.timeit()-Start) +
+        sys.stdout.write(" done in " + str(time.time()-Start) +
                          " seconds.\n")
 
         # build feature names list
@@ -277,18 +280,17 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                               CNVArmMapped, ProteinMapped, mRNAMapped))
 
         # write outputs to disk
-        File = open(Output + Prefixes[CohortIndex] + Cohort + ".Data.p", 'w')
-        pickle.dump(Symbols, File)
-        pickle.dump(SymbolTypes, File)
-        pickle.dump(Samples, File)
-        pickle.dump(Features, File)
-        pickle.dump(Survival, File)
-        pickle.dump(Censored, File)
-        pickle.dump(AvailableClinical, File)
-        pickle.dump(AvailableMutation, File)
-        pickle.dump(AvailableCNV, File)
-        pickle.dump(AvailableProtein, File)
-        pickle.dump(AvailablemRNA, File)
-        File.close()
+        io.savemat(Output + Prefixes[CohortIndex] + Cohort + ".Data.mat",
+                   {'Symbols': Symbols, 'SymbolTypes':SymbolTypes,
+                    'Samples':Samples, 'Features':Features,
+                    'Survival':Survival, 'Censored':Censored,
+                    'AvailableClinical':AvailableClinical,
+                    'AvailableCNV':AvailableCNV,
+                    'AvailableProtein':AvailableProtein,
+                    'AvailablemRNA':AvailablemRNA})
+        
+        # cleanup firehose_get executable if not provided
+        if Remove:
+            os.remove(Output + "firehose_get")
 
     return

@@ -119,6 +119,14 @@ def GetClinical(Output, FirehosePath, Disease,
     Survival[Censored == 1] = D2LF[Censored == 1]
     Survival[Censored == 0] = D2D[Censored == 0]
 
+    # remove survival related fields from output features
+    Values = np.delete(Values, CDEs.index('days_to_death'), axis=0)
+    CDEs = [CDE for CDE in CDEs if CDE != 'days_to_death']
+    Values = np.delete(Values, CDEs.index('days_to_last_followup'), axis=0)
+    CDEs = [CDE for CDE in CDEs if CDE != 'days_to_last_followup']
+    Values = np.delete(Values, CDEs.index('vital_status'), axis=0)
+    CDEs = [CDE for CDE in CDEs if CDE != 'vital_status']
+
     # strip out user-defined clinical fields for features
     Indices = [CDEs.index(CDE) for CDE in FilterCDEs if CDE in CDEs]
     CDEs = [CDE for CDE in FilterCDEs if CDE in CDEs]
@@ -128,7 +136,7 @@ def GetClinical(Output, FirehosePath, Disease,
     Encoded = []
     Names = []
     for i in range(len(CDEs)):
-        Numeric = [CheckNumeric(Value) for Value in Values[i, :]]
+        Numeric = [_CheckNumeric(Value) for Value in Values[i, :]]
         if(sum(Numeric) == len(Numeric)):  # feature is numeric - convert float
             Encoded.append([float(Value) for Value in Values[i, :]])
             Names.append(CDEs[i])  # feature is numeric - convert to float
@@ -172,7 +180,7 @@ def GetClinical(Output, FirehosePath, Disease,
     return Clinical
 
 
-def CheckNumeric(s):
+def _CheckNumeric(s):
     try:
         float(s)
         return 1
