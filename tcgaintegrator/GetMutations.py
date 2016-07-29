@@ -69,7 +69,7 @@ def GetMutations(Output, FirehosePath, Disease, MutsigQ=0.1):
     # fetch mutation data from firehose and move to output
     FH = subprocess.Popen(["cd " + Output + "; " +
                            FirehosePath + "firehose_get -b -tasks " +
-                           "Mutation_Packager_Calls.Level_3 stddata latest " +
+                           "Mutation_Packager_Raw_Calls.Level_3 stddata latest " +
                            Disease], stdout=subprocess.PIPE, shell=True)
     (Out, err) = FH.communicate()
 
@@ -82,7 +82,7 @@ def GetMutations(Output, FirehosePath, Disease, MutsigQ=0.1):
 
     # extract maf, manifest files
     MAFZip = [File for File in Files if
-              "Mutation_Packager_Calls.Level_3" in File]
+              "Mutation_Packager_Raw_Calls.Level_3" in File]
     Tar = tarfile.open(MAFZip[0])
     ManifestFile = [member for member in Tar.getmembers() if "MANIFEST.txt"
                     in member.name]
