@@ -1,9 +1,9 @@
 from firebrowse import fbget
-from GetClinical import GetClinical
-from GetCopyNumber import GetCopyNumber
-from GetGeneExpression import GetGeneExpression
-from GetMutations import GetMutations
-from GetRPPA import GetRPPA
+from .GetClinical import GetClinical
+from .GetCopyNumber import GetCopyNumber
+from .GetGeneExpression import GetGeneExpression
+from .GetMutations import GetMutations
+from .GetRPPA import GetRPPA
 import numpy as np
 import os
 import scipy.io as io
@@ -12,6 +12,20 @@ import sys
 import time
 import zipfile
 
+
+Output = '/Users/lcoop22/Desktop/Glioma/'
+FirehosePath=None
+Disease='GBMLGG'
+CancerCensusFile=None
+MutsigQ=0.1
+GisticQ=0.25
+FilterCDEs=['age_at_initial_pathologic_diagnosis',
+                             'days_to_death', 'days_to_last_followup',
+                             'gender', 'histological_type', 'pathologic_stage',
+                             'pathologic_m', 'pathologic_n',
+                             'pathologic_t', 'race', 'radiation_therapy',
+                             'vital_status']
+SampleCodes=[1, 2]
 
 def BuildDataset(Output, FirehosePath=None, Disease=None,
                  CancerCensusFile=None, MutsigQ=0.1, GisticQ=0.25,
@@ -225,8 +239,9 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                 Clinical.Values[:, Current, np.newaxis]
             Survival[Indices] = Clinical.Survival[Current]
             Censored[Indices] = Clinical.Censored[Current]
-        AvailableClinical = [True if Sample[0:12] in ClinicalSamples else False
+        AvailableClinical = ['Yes' if Sample[0:12] in ClinicalSamples else 'No'
                              for Sample in Samples]
+        AvailableClinical = np.array(AvailableClinical, dtype=object)
 
         # reshape arrays from mutation data to match order, size of 'Samples'
         Indices = [Samples.index(Sample) for Sample in MutationSamples if
@@ -236,8 +251,9 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         MutationsMapped = np.NaN * np.ones((len(MutationSymbols),
                                             len(Samples)))
         MutationsMapped[:, Indices] = Mutations.Binary[:, Mapped]
-        AvailableMutation = [True if Sample in MutationSamples else False
+        AvailableMutation = ['Yes' if Sample in MutationSamples else 'No'
                              for Sample in Samples]
+        AvailableMutation = np.array(AvailableMutation, dtype=object)
 
         # reshape arrays from CNV data to match order, size of 'Samples'
         Indices = [Samples.index(Sample) for Sample in CNVGeneSamples if
@@ -246,8 +262,9 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                   Sample in Samples]
         CNVGeneMapped = np.NaN * np.ones((len(CNVGeneSymbols), len(Samples)))
         CNVGeneMapped[:, Indices] = CNVGene.CNV[:, Mapped]
-        AvailableCNV = [True if Sample in CNVGeneSamples else False
+        AvailableCNV = ['Yes' if Sample in CNVGeneSamples else 'No'
                         for Sample in Samples]
+        AvailableCNV = np.array(AvailableCNV, dtype=object)
         Indices = [Samples.index(Sample) for Sample in CNVArmSamples if
                    Sample in Samples]
         Mapped = [Index for Index, Sample in enumerate(CNVArmSamples) if
@@ -262,8 +279,9 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                   Sample in Samples]
         ProteinMapped = np.NaN * np.ones((len(ProteinSymbols), len(Samples)))
         ProteinMapped[:, Indices] = Protein.Expression[:, Mapped]
-        AvailableProtein = [True if Sample in ProteinSamples else False
+        AvailableProtein = ['Yes' if Sample in ProteinSamples else 'No'
                             for Sample in Samples]
+        AvailableProtein = np.array(AvailableProtein, dtype=object)
                             
         # reshape arrays from Protein data to match order, size of 'Samples'
         Indices = [Samples.index(Sample) for Sample in mRNASamples if
@@ -272,9 +290,10 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                   Sample in Samples]
         mRNAMapped = np.NaN * np.ones((len(mRNASymbols), len(Samples)))
         mRNAMapped[:, Indices] = mRNA.Expression[:, Mapped]
-        AvailablemRNA = [True if Sample in mRNASamples else False
+        AvailablemRNA = ['Yes' if Sample in mRNASamples else 'No'
                         for Sample in Samples]
-                        
+        AvailablemRNA = np.array(AvailablemRNA, dtype=object)
+        
         # stack into master table
         Features = np.vstack((ClinicalMapped, MutationsMapped, CNVGeneMapped,
                               CNVArmMapped, ProteinMapped, mRNAMapped))
@@ -286,6 +305,7 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
                     'Survival':Survival, 'Censored':Censored,
                     'AvailableClinical':AvailableClinical,
                     'AvailableCNV':AvailableCNV,
+                    'AvailableMutation':AvailableMutation,
                     'AvailableProtein':AvailableProtein,
                     'AvailablemRNA':AvailablemRNA})
         
