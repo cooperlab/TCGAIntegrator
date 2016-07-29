@@ -13,20 +13,6 @@ import time
 import zipfile
 
 
-Output = '/Users/lcoop22/Desktop/Glioma/'
-FirehosePath=None
-Disease='GBMLGG'
-CancerCensusFile=None
-MutsigQ=0.1
-GisticQ=0.25
-FilterCDEs=['age_at_initial_pathologic_diagnosis',
-                             'days_to_death', 'days_to_last_followup',
-                             'gender', 'histological_type', 'pathologic_stage',
-                             'pathologic_m', 'pathologic_n',
-                             'pathologic_t', 'race', 'radiation_therapy',
-                             'vital_status']
-SampleCodes=[1, 2]
-
 def BuildDataset(Output, FirehosePath=None, Disease=None,
                  CancerCensusFile=None, MutsigQ=0.1, GisticQ=0.25,
                  FilterCDEs=['age_at_initial_pathologic_diagnosis',
