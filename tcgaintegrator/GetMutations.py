@@ -7,7 +7,7 @@ import subprocess
 import tarfile
 
 
-def GetMutations(Output, FirehosePath, Disease, MutsigQ=0.1):
+def GetMutations(Output, FirehosePath, Disease, MutsigQ=0.1, Raw=False):
     """Generates variables containing mutation events with significance
     'MutsigQ' or greater. Uses Firebrowse, a tool from the Broad Genome Data
     Analysis Center to download Mutsig2CV results from the Broad Institute
@@ -28,6 +28,10 @@ def GetMutations(Output, FirehosePath, Disease, MutsigQ=0.1):
     MutsigQ : double
         A scalar in the range [0, 1] specifying the Mutsig2CV significance
         threshold to use when filtering somatic mutation events.
+    Raw : bool
+        Flag indicating whether to use raw mutation calls, or packaged mutation
+        calls. Packaged calls may have fewer samples. Raw calls may have more
+        samples but are unavailable for some projects.
         
     Returns
     -------
@@ -67,10 +71,16 @@ def GetMutations(Output, FirehosePath, Disease, MutsigQ=0.1):
     Latest = [Run for Run in Runs.split("\n") if Run.startswith("stddata")][-1]
 
     # fetch mutation data from firehose and move to output
-    FH = subprocess.Popen(["cd " + Output + "; " +
-                           FirehosePath + "firehose_get -b -tasks " +
-                           "Mutation_Packager_Raw_Calls.Level_3 stddata latest " +
-                           Disease], stdout=subprocess.PIPE, shell=True)
+    if Raw:
+        FH = subprocess.Popen(["cd " + Output + "; " +
+                               FirehosePath + "firehose_get -b -tasks " +
+                               "Mutation_Packager_Raw_Calls.Level_3 stddata latest " +
+                               Disease], stdout=subprocess.PIPE, shell=True)
+    else:
+        FH = subprocess.Popen(["cd " + Output + "; " +
+                               FirehosePath + "firehose_get -b -tasks " +
+                               "Mutation_Packager_Calls.Level_3 stddata latest " +
+                               Disease], stdout=subprocess.PIPE, shell=True)        
     (Out, err) = FH.communicate()
 
     # find *.tar.gz files in download directory
@@ -81,8 +91,12 @@ def GetMutations(Output, FirehosePath, Disease, MutsigQ=0.1):
                 Files.append(root + "/" + file)
 
     # extract maf, manifest files
-    MAFZip = [File for File in Files if
-              "Mutation_Packager_Raw_Calls.Level_3" in File]
+    if Raw:
+        MAFZip = [File for File in Files if
+                  "Mutation_Packager_Raw_Calls.Level_3" in File]
+    else:
+        MAFZip = [File for File in Files if
+                  "Mutation_Packager_Calls.Level_3" in File]
     Tar = tarfile.open(MAFZip[0])
     ManifestFile = [member for member in Tar.getmembers() if "MANIFEST.txt"
                     in member.name]

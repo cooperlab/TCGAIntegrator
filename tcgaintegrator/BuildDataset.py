@@ -14,7 +14,7 @@ import zipfile
 
 
 def BuildDataset(Output, FirehosePath=None, Disease=None,
-                 CancerCensusFile=None, MutsigQ=0.1, GisticQ=0.25,
+                 CancerCensusFile=None, MutsigQ=0.1, Raw=False, GisticQ=0.25,
                  FilterCDEs=['age_at_initial_pathologic_diagnosis',
                              'days_to_death', 'days_to_last_followup',
                              'gender', 'histological_type', 'pathologic_stage',
@@ -51,6 +51,10 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
     MutsigQ : double
         A scalar in the range [0, 1] specifying the Mutsig2CV significance
         threshold to use when filtering somatic mutation events.
+    Raw : bool
+        Flag indicating whether to use raw mutation calls, or packaged mutation
+        calls. Packaged calls may have fewer samples. Raw calls may have more
+        samples but are unavailable for some projects.        
     GisticQ : double
         A scalar in the range [0, 1] specifying the GISTIC significance
         threshold to use when filtering copy-number events.
