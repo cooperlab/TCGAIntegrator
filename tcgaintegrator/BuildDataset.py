@@ -154,7 +154,7 @@ def BuildDataset(Output, FirehosePath=None, Disease=None,
         sys.stdout.write("\tMutations - generating data...")
         Start = time.time()
         Mutations = GetMutations(Output + Prefixes[CohortIndex], FirehosePath,
-                                 Cohort, MutsigQ)
+                                 Cohort, MutsigQ, Raw)
         sys.stdout.write(" done in " + str(time.time()-Start) +
                          " seconds.\n")
 
