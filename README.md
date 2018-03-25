@@ -4,6 +4,8 @@ TCGAIntegrator is a tool for building python variables taht contain sample-level
 ## Dependencies
 TCGAIntegrator requires the *requests*, *firebrowse* and *numpy* packages.
 
+*Note: the PyPI version of firebrowse does not include fbget.py as of 0.1.11. The fbget.py file required by this package is included in the .zip package hosted at [http://gdac.broadinstitute.org/runs/code/fbget-0.1.11.zip](http://gdac.broadinstitute.org/runs/code/fbget-0.1.11.zip).*
+
 ## Filtering Copy Number Events
 Copy number events identified as significant by GISTIC can number in the thousands. These results can be further filtered against the Sanger Cancer Gene Census (http://cancer.sanger.ac.uk/census/) by providing a path to the Census .csv file that can be downloaded from the Sanger project page.
 
